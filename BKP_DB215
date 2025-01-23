@@ -42,6 +42,12 @@
         opts: "username={{ smb_username }},password={{ smb_password }},domain={{ smb_domain }}"
         state: mounted
 
+    - name: Ensure destination directory exists
+      ansible.builtin.file:
+        path: "/mnt/smb/215/BKP_DB_{{ data }}/215"
+        state: directory
+        mode: '0755'
+
     - name: Copy contents of the 215 folder to the existing SMB directory
       ansible.builtin.copy:
         src: "{{ local_folder }}"
