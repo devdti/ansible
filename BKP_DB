@@ -2,14 +2,6 @@
   hosts: localhost
   gather_facts: no
   become: true
-  vars:
-    backup_script_path: "/caminho/do/seu/script.py"  # Defina o caminho do script Python
-    smb_server: "seu_servidor_smb"
-    smb_share: "seu_share_smb"
-    smb_username: "seu_usuario"
-    smb_password: "sua_senha"
-    smb_domain: "seu_dominio"
-
   tasks:
     # Verifica se o script de backup existe
     - name: Check if backup script exists
@@ -22,12 +14,12 @@
         msg: "O script de backup não foi encontrado em {{ backup_script_path }}."
       when: not script_stat.stat.exists
 
-    # Executa o script de backup
-    - name: Run the backup script
-      ansible.builtin.command:
-        cmd: "python3 {{ backup_script_path }}"
+    # Executa o script de backup usando o módulo script
+    - name: Run the backup script using the script module
+      ansible.builtin.script:
+        cmd: "{{ backup_script_path }}"
+        executable: /usr/bin/python3
       register: backup_result
-      changed_when: false  # Não marca a tarefa como "changed" (apenas execução)
 
     - name: Debug backup result
       ansible.builtin.debug:
@@ -65,7 +57,7 @@
       ansible.builtin.copy:
         src: "{{ item.path }}"
         dest: "/mnt/smb/db/{{ item.path.split('/')[-1] }}"
-        remote_src: yes  # Indica que o arquivo está no host local
+        remote_src: yes
       loop: "{{ backup_folder.files }}"
       when: backup_folder.matched > 0
 
