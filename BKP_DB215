@@ -45,7 +45,7 @@
     - name: Copy contents of the 215 folder to the existing SMB directory
       ansible.builtin.copy:
         src: "{{ local_folder }}"
-        dest: "/mnt/smb/215/BKP_DB_{{ data }}/"
+        dest: "/mnt/smb/215/BKP_DB_{{ data }}/215/"
         remote_src: yes  # Copia do sistema local para o SMB montado
         directory_mode: yes  # Garante que a estrutura de diretórios seja mantida
 
