@@ -3,12 +3,11 @@
   hosts: localhost
   gather_facts: no
   become: true  # Isso concede privilégios de superusuário para as tarefas
-
   tasks:
     # Executa o script de backup
     - name: Run the backup script
       ansible.builtin.command:
-        cmd: "python3 {{ backup_script_path }}"
+        _raw_params: "python3 {{ backup_script_path }}"
       register: backup_result
       changed_when: false  # Não marca a tarefa como "changed" (apenas execução)
 
