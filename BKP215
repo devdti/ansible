@@ -1,0 +1,59 @@
+---
+- name: Download files via SFTP and copy to SMB
+  hosts: all
+  tasks:
+    # SFTP: Find files starting with "libx"
+    - name: Find files starting with "libx"
+      ansible.builtin.find:
+        paths: /var/libx
+        patterns: 'libx*'
+      register: matching_files
+      failed_when: matching_files.matched == 0  # Falha caso não encontre arquivos
+
+    - name: Debug matched files
+      ansible.builtin.debug:
+        msg: "{{ matching_files.files | map(attribute='path') | list }}"
+
+    - name: Download each matching file via SFTP
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: /home/bkp/215/
+        flat: yes
+      loop: "{{ matching_files.files }}"
+
+- name: Search and copy files using SMB with mount
+  hosts: localhost
+  gather_facts: no
+  become: true  # Isso concede privilégios de superusuário para as tarefas
+  tasks:
+    - name: Search for files starting with 'libx215' in the source folder
+      ansible.builtin.find:
+        paths: "{{ local_folder }}"
+        patterns: "libx215*"
+      register: arquivos_encontrados
+
+    - name: Create mount point directory
+      ansible.builtin.file:
+        path: /mnt/smb/215
+        state: directory
+        mode: '0755'
+
+    - name: Mount the SMB share
+      ansible.builtin.mount:
+        path: /mnt/smb/215
+        src: "//{{ smb_server }}/{{ smb_share }}"
+        fstype: cifs
+        opts: "username={{ smb_username }},password={{ smb_password }},domain={{ smb_domain }}"
+        state: mounted
+
+    - name: Copy files to the mounted SMB share
+      ansible.builtin.copy:
+        src: "{{ item.path }}"
+        dest: "/mnt/smb/215/{{ item.path.split('/')[-1] }}"
+      loop: "{{ arquivos_encontrados.files }}"
+      when: arquivos_encontrados.matched > 0
+
+    - name: Unmount the SMB share
+      ansible.builtin.mount:
+        path: /mnt/smb/215
+        state: unmounted
