@@ -1,8 +1,8 @@
+---
 - name: Backup databases and copy to SMB
   hosts: localhost
   gather_facts: no
   become: true
-
   tasks:
     # Verifica se o script de backup existe
     - name: Check if backup script exists
@@ -15,11 +15,10 @@
         msg: "O script de backup não foi encontrado em {{ backup_script_path }}."
       when: not script_stat.stat.exists
 
-    # Executa o script de backup usando o módulo script
-    - name: Run the backup script using the script module
-      ansible.builtin.script:
-        cmd: "{{ backup_script_path }}"
-        executable: /usr/bin/python3
+    # Executa o script de backup localmente usando o módulo command
+    - name: Run the backup script locally
+      ansible.builtin.command:
+        cmd: "python3 {{ backup_script_path }}"
       register: backup_result
 
     - name: Debug backup result
