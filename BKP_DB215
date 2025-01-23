@@ -14,9 +14,14 @@
       ansible.builtin.debug:
         msg: "{{ matching_files.files | map(attribute='path') | list }}"
 
+    - name: Ensure local folder exists
+      ansible.builtin.file:
+        path: "{{ local_folder }}"
+        state: directory
+        mode: '0755'
+
     - name: Download each matching file via SFTP (without preserving full path)
       ansible.builtin.shell: |
-        mkdir -p "{{ local_folder }}"
         cp "{{ item.path }}" "{{ local_folder }}/$(basename "{{ item.path }}")"
       loop: "{{ matching_files.files }}"
       args:
