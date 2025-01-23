@@ -1,6 +1,7 @@
 ---
 - name: Backup databases and copy to SMB
   hosts: localhost
+  connection: local
   gather_facts: no
   become: true
   tasks:
@@ -17,10 +18,11 @@
 
     # Executa o script de backup localmente usando o módulo command
     - name: Executar script Python localmente
-      ansible.builtin.command:
-        cmd: python3 main.py
-        chdir: "{{ script_path }}"
-      register: backup_result
+      tasks:
+        - name: Executar o script Python
+          command: python3 main.py
+          args:
+            chdir: "{{ backup_script_path }}"
 
     - name: Debug backup result
       ansible.builtin.debug:
