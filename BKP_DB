@@ -20,7 +20,7 @@
     - name: Executar o script Python
       command: python3 main.py
       args:
-        chdir: "{{ backup_script_path }}"
+        chdir: "{{ script_path }}"
 
     - name: Debug backup result
       ansible.builtin.debug:
