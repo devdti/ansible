@@ -17,12 +17,10 @@
       when: not script_stat.stat.exists
 
     # Executa o script de backup localmente usando o módulo command
-    - name: Executar script Python localmente
-      tasks:
-        - name: Executar o script Python
-          command: python3 main.py
-          args:
-            chdir: "{{ backup_script_path }}"
+    - name: Executar o script Python
+      command: python3 main.py
+      args:
+        chdir: "{{ backup_script_path }}"
 
     - name: Debug backup result
       ansible.builtin.debug:
