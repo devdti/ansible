@@ -14,18 +14,12 @@
       ansible.builtin.debug:
         msg: "{{ matching_files.files | map(attribute='path') | list }}"
 
-    - name: Ensure local folder exists
-      ansible.builtin.file:
-        path: "{{ local_folder }}"
-        state: directory
-        mode: '0755'
-
-    - name: Download each matching file via SFTP (without preserving full path)
-      ansible.builtin.shell: |
-        cp "{{ item.path }}" "{{ local_folder }}/$(basename "{{ item.path }}")"
+    - name: Download each matching file via SFTP
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "{{ local_folder }}"
+        flat: no  # Mantém a estrutura de diretórios
       loop: "{{ matching_files.files }}"
-      args:
-        executable: /bin/bash
 
 - name: Copy folder to existing SMB directory
   hosts: localhost
@@ -48,16 +42,10 @@
         opts: "username={{ smb_username }},password={{ smb_password }},domain={{ smb_domain }}"
         state: mounted
 
-    - name: Ensure destination directory exists
-      ansible.builtin.file:
-        path: "/mnt/smb/215/BKP_DB_{{ data }}/215"
-        state: directory
-        mode: '0755'
-
     - name: Copy contents of the 215 folder to the existing SMB directory
       ansible.builtin.copy:
-        src: "{{ local_folder }}/"
-        dest: "/mnt/smb/215/BKP_DB_{{ data }}/215/"
+        src: "{{ local_folder }}"
+        dest: "/mnt/smb/215/BKP_DB_{{ data }}/"
         remote_src: yes  # Copia do sistema local para o SMB montado
         directory_mode: yes  # Garante que a estrutura de diretórios seja mantida
 
