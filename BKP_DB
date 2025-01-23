@@ -1,8 +1,7 @@
----
 - name: Backup databases and copy to SMB
   hosts: localhost
   gather_facts: no
-  become: true  # Isso concede privilégios de superusuário para as tarefas
+  become: true
   tasks:
     # Verifica se o script de backup existe
     - name: Check if backup script exists
@@ -17,10 +16,10 @@
 
     # Executa o script de backup
     - name: Run the backup script
-      ansible.builtin.command:
-        _raw_params: "python3 {{ backup_script_path }}"
+      ansible.builtin.shell:
+        cmd: "python3 {{ backup_script_path }}"
       register: backup_result
-      changed_when: false  # Não marca a tarefa como "changed" (apenas execução)
+      changed_when: false
 
     - name: Debug backup result
       ansible.builtin.debug:
@@ -58,7 +57,7 @@
       ansible.builtin.copy:
         src: "{{ item.path }}"
         dest: "/mnt/smb/db/{{ item.path.split('/')[-1] }}"
-        remote_src: yes  # Indica que o arquivo está no host local
+        remote_src: yes
       loop: "{{ backup_folder.files }}"
       when: backup_folder.matched > 0
 
