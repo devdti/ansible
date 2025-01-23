@@ -17,13 +17,10 @@
 
     # Executa o script de backup localmente usando o módulo command
     - name: Executar script Python localmente
-      hosts: localhost
-      connection: local
-      tasks:
-        - name: Executar o script Python
-          command: python3 main.py
-          args:
-            chdir: "{{ script_path }}"
+      ansible.builtin.command:
+        cmd: python3 main.py
+        chdir: "{{ script_path }}"
+      register: backup_result
 
     - name: Debug backup result
       ansible.builtin.debug:
