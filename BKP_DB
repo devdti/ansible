@@ -4,10 +4,21 @@
   gather_facts: no
   become: true  # Isso concede privilégios de superusuário para as tarefas
   tasks:
+    # Verifica se o script de backup existe
+    - name: Check if backup script exists
+      ansible.builtin.stat:
+        path: "{{ backup_script_path }}"
+      register: script_stat
+
+    - name: Fail if backup script does not exist
+      ansible.builtin.fail:
+        msg: "O script de backup não foi encontrado em {{ backup_script_path }}."
+      when: not script_stat.stat.exists
+
     # Executa o script de backup
     - name: Run the backup script
       ansible.builtin.command:
-        _raw_params: "python3 {{ backup_script_path }}"
+        cmd: "python3 {{ backup_script_path }}"
       register: backup_result
       changed_when: false  # Não marca a tarefa como "changed" (apenas execução)
 
