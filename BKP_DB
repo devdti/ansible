@@ -1,4 +1,3 @@
----
 - name: Backup databases and copy to SMB
   hosts: localhost
   connection: local
@@ -45,11 +44,11 @@
         opts: "username={{ smb_username }},password={{ smb_password }},domain={{ smb_domain }}"
         state: mounted
 
-    # Copia a pasta de backup para o SMB
-    - name: Copy backup folder to SMB
+    # Copia o conteúdo da pasta de backup para o SMB
+    - name: Copy backup folder contents to SMB
       ansible.builtin.copy:
-        src: "{{ item.path }}"
-        dest: "/mnt/smb/db/{{ item.path.split('/')[-1] }}"
+        src: "{{ item.path }}/"
+        dest: "/mnt/smb/db/"
         remote_src: yes
       loop: "{{ backup_folder.files }}"
       when: backup_folder.matched > 0
