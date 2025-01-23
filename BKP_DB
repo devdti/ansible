@@ -44,13 +44,12 @@
         opts: "username={{ smb_username }},password={{ smb_password }},domain={{ smb_domain }}"
         state: mounted
 
-    # Copia o conteúdo da pasta de backup para o SMB
-    - name: Copy backup folder contents to SMB
+    # Copia a pasta de backup inteira para o SMB
+    - name: Copy backup folder to SMB
       ansible.builtin.copy:
-        src: "{{ item.path }}/"
+        src: "{{ backup_folder.files[0].path }}/"
         dest: "/mnt/smb/db/"
         remote_src: yes
-      loop: "{{ backup_folder.files }}"
       when: backup_folder.matched > 0
 
     # Desmonta o compartilhamento SMB
