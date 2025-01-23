@@ -16,8 +16,8 @@
 
     # Executa o script de backup
     - name: Run the backup script
-      ansible.builtin.shell:
-        cmd: "python3 {{ backup_script_path }}"
+      ansible.builtin.command:
+        _raw_params: "python3 {{ backup_script_path }}"
       register: backup_result
       changed_when: false
 
