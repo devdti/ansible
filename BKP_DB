@@ -1,10 +1,78 @@
 ---
-- name: Executar script Python localmente
+- name: Backup databases and copy to SMB
   hosts: localhost
-  connection: local
+  gather_facts: no
+  become: true
   tasks:
-    - name: Executar o script Python
-      command: python3 main.py
-      args:
-        chdir: "{{ backup_script_path }}"
+    # Verifica se o script de backup existe
+    - name: Check if backup script exists
+      ansible.builtin.stat:
+        path: "{{ backup_script_path }}"
+      register: script_stat
 
+    - name: Fail if backup script does not exist
+      ansible.builtin.fail:
+        msg: "O script de backup não foi encontrado em {{ backup_script_path }}."
+      when: not script_stat.stat.exists
+
+    # Executa o script de backup localmente usando o módulo command
+    - name: Executar script Python localmente
+      hosts: localhost
+      connection: local
+      tasks:
+        - name: Executar o script Python
+          command: python3 main.py
+          args:
+            chdir: "{{ script_path }}"
+
+    - name: Debug backup result
+      ansible.builtin.debug:
+        msg: "{{ backup_result.stdout }}"
+
+    # Encontra a pasta de backup gerada
+    - name: Find the backup folder
+      ansible.builtin.find:
+        paths: /home/bkp/db
+        patterns: "BKP_DB_*"
+        file_type: directory
+      register: backup_folder
+
+    - name: Debug backup folder
+      ansible.builtin.debug:
+        msg: "{{ backup_folder.files | map(attribute='path') | list }}"
+
+    # Monta o compartilhamento SMB
+    - name: Create mount point directory
+      ansible.builtin.file:
+        path: /mnt/smb/db
+        state: directory
+        mode: '0755'
+
+    - name: Mount the SMB share
+      ansible.builtin.mount:
+        path: /mnt/smb/db
+        src: "//{{ smb_server }}/{{ smb_share }}"
+        fstype: cifs
+        opts: "username={{ smb_username }},password={{ smb_password }},domain={{ smb_domain }}"
+        state: mounted
+
+    # Copia a pasta de backup para o SMB
+    - name: Copy backup folder to SMB
+      ansible.builtin.copy:
+        src: "{{ item.path }}"
+        dest: "/mnt/smb/db/{{ item.path.split('/')[-1] }}"
+        remote_src: yes
+      loop: "{{ backup_folder.files }}"
+      when: backup_folder.matched > 0
+
+    # Desmonta o compartilhamento SMB
+    - name: Unmount the SMB share
+      ansible.builtin.mount:
+        path: /mnt/smb/db
+        state: unmounted
+
+    # Limpa o ponto de montagem
+    - name: Remove mount point directory
+      ansible.builtin.file:
+        path: /mnt/smb/db
+        state: absent
