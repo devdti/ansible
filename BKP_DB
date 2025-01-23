@@ -19,7 +19,7 @@
       ansible.builtin.command:
         _raw_params: "python3 {{ backup_script_path }}"
       register: backup_result
-      changed_when: false
+      changed_when: false  # Não marca a tarefa como "changed" (apenas execução)
 
     - name: Debug backup result
       ansible.builtin.debug:
@@ -57,7 +57,7 @@
       ansible.builtin.copy:
         src: "{{ item.path }}"
         dest: "/mnt/smb/db/{{ item.path.split('/')[-1] }}"
-        remote_src: yes
+        remote_src: yes  # Indica que o arquivo está no host local
       loop: "{{ backup_folder.files }}"
       when: backup_folder.matched > 0
 
