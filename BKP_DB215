@@ -18,7 +18,7 @@
       ansible.builtin.fetch:
         src: "{{ item.path }}"
         dest: "{{ local_folder }}"
-        flat: no  # Mantém a estrutura de diretórios
+        flat: yes  # Salva todos os arquivos diretamente no local_folder
       loop: "{{ matching_files.files }}"
 
 - name: Copy folder to existing SMB directory
@@ -45,8 +45,8 @@
     - name: Copy contents of the 215 folder to the existing SMB directory
       ansible.builtin.copy:
         src: "{{ local_folder }}"
-        dest: "/mnt/smb/215/BKP_DB_{{ data }}/"
-        remote_src: yes  # Copia do sistema local para o SMB montado
+        dest: "/mnt/smb/215/BKP_DB_{{ data }}/215/"
+        remote_src: no  # Copia do sistema local para o SMB montado
         directory_mode: yes  # Garante que a estrutura de diretórios seja mantida
 
     - name: Unmount the SMB share
