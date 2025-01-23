@@ -1,0 +1,55 @@
+---
+- name: Download files via SFTP and copy to SMB
+  hosts: all
+  tasks:
+    # SFTP: Find files in the folder /var/libx/215/
+    - name: Find files in the folder /var/libx/215/
+      ansible.builtin.find:
+        paths: /var/libx/215/
+        recurse: yes  # Inclui subdiretórios
+      register: matching_files
+      failed_when: matching_files.matched == 0  # Falha caso não encontre arquivos
+
+    - name: Debug matched files
+      ansible.builtin.debug:
+        msg: "{{ matching_files.files | map(attribute='path') | list }}"
+
+    - name: Download each matching file via SFTP
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "{{ local_folder }}"
+        flat: no  # Mantém a estrutura de diretórios
+      loop: "{{ matching_files.files }}"
+
+- name: Copy folder to existing SMB directory
+  hosts: localhost
+  gather_facts: no
+  become: true  # Isso concede privilégios de superusuário para as tarefas
+  vars:
+    data: "{{ ansible_date_time.day }}{{ ansible_date_time.month }}{{ ansible_date_time.year }}"  # Formato DDMMAA
+  tasks:
+    - name: Create mount point directory
+      ansible.builtin.file:
+        path: /mnt/smb/215
+        state: directory
+        mode: '0755'
+
+    - name: Mount the SMB share
+      ansible.builtin.mount:
+        path: /mnt/smb/215
+        src: "//{{ smb_server }}/{{ smb_share }}"
+        fstype: cifs
+        opts: "username={{ smb_username }},password={{ smb_password }},domain={{ smb_domain }}"
+        state: mounted
+
+    - name: Copy entire folder to the existing SMB directory
+      ansible.builtin.copy:
+        src: "{{ local_folder }}"
+        dest: "/mnt/smb/215/BKP_DB_{{ data }}/215/"
+        remote_src: yes  # Copia do sistema local para o SMB montado
+        directory_mode: yes  # Garante que a estrutura de diretórios seja mantida
+
+    - name: Unmount the SMB share
+      ansible.builtin.mount:
+        path: /mnt/smb/215
+        state: unmounted
