@@ -42,10 +42,10 @@
         opts: "username={{ smb_username }},password={{ smb_password }},domain={{ smb_domain }}"
         state: mounted
 
-    - name: Copy entire folder to the existing SMB directory
+    - name: Copy contents of the 215 folder to the existing SMB directory
       ansible.builtin.copy:
         src: "{{ local_folder }}"
-        dest: "/mnt/smb/215/BKP_DB_{{ data }}/215/"
+        dest: "/mnt/smb/215/BKP_DB_{{ data }}/"
         remote_src: yes  # Copia do sistema local para o SMB montado
         directory_mode: yes  # Garante que a estrutura de diretórios seja mantida
 
