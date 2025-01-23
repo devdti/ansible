@@ -14,11 +14,11 @@
       ansible.builtin.debug:
         msg: "{{ matching_files.files | map(attribute='path') | list }}"
 
-    - name: Download each matching file via SFTP
+    - name: Download each matching file via SFTP (without preserving full path)
       ansible.builtin.fetch:
         src: "{{ item.path }}"
-        dest: "{{ local_folder }}"
-        flat: no  # Mantém a estrutura de diretórios
+        dest: "{{ local_folder }}/{{ item.path | basename }}"  # Salva apenas o nome do arquivo, sem o caminho completo
+        flat: yes  # Ignora a estrutura de diretórios de origem
       loop: "{{ matching_files.files }}"
 
 - name: Copy folder to existing SMB directory
@@ -50,7 +50,7 @@
 
     - name: Copy contents of the 215 folder to the existing SMB directory
       ansible.builtin.copy:
-        src: "{{ local_folder }}"
+        src: "{{ local_folder }}/"
         dest: "/mnt/smb/215/BKP_DB_{{ data }}/215/"
         remote_src: yes  # Copia do sistema local para o SMB montado
         directory_mode: yes  # Garante que a estrutura de diretórios seja mantida
