@@ -26,7 +26,7 @@
   gather_facts: yes  # Habilita a coleta de fatos para usar ansible_date_time
   become: true  # Isso concede privilégios de superusuário para as tarefas
   vars:
-    data: "{{ ansible_date_time.day }}{{ ansible_date_time.month }}{{ ansible_date_time.year }}"  # Formato DDMMAA
+    data: "{{ ansible_date_time.day }}{{ ansible_date_time.month }}{{ ansible_date_time.year[-2:] }}"  # Formato DDMMAA (ano com 2 dígitos)
   tasks:
     - name: Create mount point directory
       ansible.builtin.file:
