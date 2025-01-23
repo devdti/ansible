@@ -47,7 +47,7 @@
     # Copia a pasta de backup inteira para o SMB
     - name: Copy backup folder to SMB
       ansible.builtin.copy:
-        src: "{{ backup_folder.files[0].path }}/"
+        src: "{{ backup_folder.files[0].path }}"
         dest: "/mnt/smb/db/"
         remote_src: yes
       when: backup_folder.matched > 0
