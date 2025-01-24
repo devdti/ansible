@@ -17,11 +17,7 @@
     - name: Download each matching file via SFTP
       ansible.builtin.fetch:
         src: "{{ item.path }}"
-<<<<<<< HEAD
-        dest: /home/bkp/57/
-=======
         dest: /home/bkp/68/
->>>>>>> ff1c5b8ac33cdc7db99d86bb57d74fa9fa0867e4
         flat: yes
       loop: "{{ matching_files.files }}"
 
